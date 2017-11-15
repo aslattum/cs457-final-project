@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------------
-PA-03: Big Integers & Elgamal Digital Signatures using openSSL.
+Final-Project: Needham-Scroeder Protocol
 
 FILE:   myCrypto.c
 
 Written By:
-     1- Tanner Wernecke
-     2- Adam Slattum
+     1- Adam Slattum
 
-Submitted on: 11//17
+Submitted on: 12/3/17
 ----------------------------------------------------------------------------*/
 
 #include "myCrypto.h"

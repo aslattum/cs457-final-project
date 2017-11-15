@@ -20,7 +20,7 @@ int main ( int argc , char * argv[] )
 
     if( argc < 3 )
     {
-        printf("Missing command-line arguments: %s <ctrlFD> <dataFD>\n" , argv[0]) ;
+        printf("Missing command-line arguments\n") ;
         exit(-1) ;
     }
     int AtoKDC_ctrl = atoi( argv[1] ) ;
