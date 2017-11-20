@@ -54,10 +54,21 @@ int main ( int argc , char * argv[] )
     /* Step One of Protocol */
     char *IDa = "Amal";
     char *IDb = "Basim";
+    BN_CTX *ctx = BN_CTX_new();
     BIGNUM *Na = BN_new();
+    BIGNUM *range = BN_new();
 
-    BIGNUM *random = BN_new();
-    Na = BN_myRandom(random);
+    // craete two and 64 random nums to do 2^64 range for random num
+    BIGNUM *two = BN_new();
+    BIGNUM *sixty_four = BN_new();
+    BN_dec2bn(&two, "2");
+    BN_dec2bn(&sixty_four, "64");
+
+    // create the range for the random num
+    BN_exp(range, two, sixty_four, ctx);
+
+    // create the random nonce Na
+    BN_rand_range(Na, range);
 
     int KDC_write1 = write(AtoKDC_ctrl, IDa, sizeof(IDa));
     int KDC_write2 = write(AtoKDC_ctrl, IDb, sizeof(IDb));
