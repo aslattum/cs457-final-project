@@ -53,7 +53,10 @@ int main ( int argc , char * argv[] )
 
     /* Step One of Protocol */
     char *IDa = "Amal";
+    int sizeIDa = 4;
     char *IDb = "Basim";
+    int sizeIDb = 5;
+
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM *Na = BN_new();
     BIGNUM *range = BN_new();
@@ -69,6 +72,15 @@ int main ( int argc , char * argv[] )
 
     // create the random nonce Na
     BN_rand_range(Na, range);
+
+    uint8_t IDa_array[sizeof(sizeIDa) + sizeIDa];
+    uint8_t IDb_array[sizeof(sizeIDb) + sizeIDb];
+    uint8_t Na_array[sizeof(BN_num_bytes(Na)) + BN_num_bytes(Na)];
+
+    uint8_t temp_size = sizeof(IDa_array) + sizeof(IDb_array) + sizeof(Na_array);
+    uint8_t step1_total_size = sizeof(temp_size) + temp_size;
+
+    uint8_t step1_array[step1_total_size];
 
     int KDC_write1 = write(AtoKDC_ctrl, IDa, sizeof(IDa));
     int KDC_write2 = write(AtoKDC_ctrl, IDb, sizeof(IDb));
