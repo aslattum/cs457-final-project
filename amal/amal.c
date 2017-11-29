@@ -238,7 +238,7 @@ int main ( int argc , char * argv[] )
 
 	fprintf(log, "Reading from the KDC, the encryption of Ks, IDb, and Na as well as the encryption intended for basim\n");
     fprintf(log, "Hexdump of Ks Key:\n");
-    BIO_dump_fp (log, (const char *) step2_KsKey, step2_KsKey_Length);
+    BIO_dump_fp (log, (const char *) step2_KsKey, key_len);
     fprintf(log, "Hexdump of Ks IV:\n");
     BIO_dump_fp (log, (const char *) step2_KsIV, step2_KsIV_Length);
     fprintf(log, "IDb: %s\n", step2_IDb);
@@ -433,7 +433,12 @@ int main ( int argc , char * argv[] )
 	fprintf(log, "Wrote the function of Nb back to Basim encrypted with the session key\n");
 	fprintf(log, "f(Nb): %s\n", BN_bn2hex(functionNb_BN));
 
+	// write the step5 message
 	write(AtoB_ctrl, step5_message, step5_messageLength);
+
+
+	/* Transmit bunny.mp4 file to basim using session key for encryption */
+	encryptFile(fd_bunny, AtoB_data, step2_KsKey, step2_KsIV);
 	
     EVP_cleanup();
     ERR_free_strings();

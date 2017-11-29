@@ -28,6 +28,15 @@ int main ( int argc , char * argv[] )
     int AtoB_data = atoi( argv[2] ) ;
 	int BtoA_ctrl = atoi( argv[3] ) ; 
 
+	// Open the file that we will send
+    int fd_bunny = open("basim/bunny.mp4" , O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR ) ;
+    if( fd_bunny == -1 )
+    {
+        fprintf( stderr , "This is Basim. Could not open input file\n");
+        exit(-1) ;
+    }
+
+
     // Open the log file
     FILE *log = fopen("basim/logBasim.txt" , "w" );
     if( ! log )
@@ -302,6 +311,9 @@ int main ( int argc , char * argv[] )
 	fprintf(log, "Na2 after function applied in opposite way: %s\n" , BN_bn2hex(checkFunctionNb));
 	fprintf(log, "\nAMAL HAS BEEN VALIDATED\n");	
 
+	
+	/* Read bunny.mp4 file from Amal using session key for decryption */
+    decryptFile(AtoB_data, fd_bunny, sessionKey, sessionIV);
 
 	EVP_cleanup();
     ERR_free_strings();

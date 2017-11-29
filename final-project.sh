@@ -63,5 +63,10 @@ echo
 echo "======  Basim's  LOG  ========="
 cat basim/logBasim.txt
 echo
+
+echo
+echo "======  Verifying file transmission ========="
 echo
 
+diff -s amal/bunny.mp4 basim/bunny.mp4
+echo

@@ -237,7 +237,7 @@ int main ( int argc , char * argv[] )
 
 	fprintf(log, "Sending to amal the encryption of Ks, IDb, and Na as well as the encryption intended for basim\n");
 	fprintf(log, "Hexdump of Ks Key:\n");
-	BIO_dump_fp (log, (const char *) sessionKey, sesKeyLength);
+	BIO_dump_fp (log, (const char *) sessionKey, key_len);
 	fprintf(log, "Hexdump of Ks IV:\n");
 	BIO_dump_fp (log, (const char *) sessionIV, sesIVLength);
 	fprintf(log, "IDb: %s\n", basimArray);

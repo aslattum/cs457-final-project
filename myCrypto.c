@@ -10,6 +10,8 @@ Submitted on: 12/3/17
 ----------------------------------------------------------------------------*/
 
 #include "myCrypto.h"
+#define CIPHER_LEN_MAX 1024
+#define PLAINTEXT_LEN_MAX (CIPHER_LEN_MAX-16)
 
 void handleErrors( char *msg)
 {
@@ -156,5 +158,108 @@ int decrypt( unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
 	/* Clean up */
 	EVP_CIPHER_CTX_free(ctx);
 	return plaintext_len;
+}
+
+//-----------------------------------------------------------------------------
+int encryptFile( int fd_in, int fd_out, unsigned char *key, unsigned char *iv )
+{
+  EVP_CIPHER_CTX *ctx;
+  int len, ciphertext_len;
+  char plaintext[PLAINTEXT_LEN_MAX];
+  char ciphertext[CIPHER_LEN_MAX];
+
+  /* Create and initialise the context */
+  if( !(ctx = EVP_CIPHER_CTX_new()) )
+      handleErrors("Error");
+
+  /* Initialise the encryption operation. IMPORTANT - ensure you use a key
+  * and IV size appropriate for your cipher
+  * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+  * IV size for *most* modes is the same as the block size. For AES this
+  * is 128 bits */
+  if( 1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) )
+      handleErrors("Error");
+
+  /* Continuously loop until no more plaintext can be read, 
+     encrypting along the way
+  */ 
+  while ( 1 ) 
+  {
+    int nbytes = read( fd_in, plaintext, PLAINTEXT_LEN_MAX ) ; 
+    if ( nbytes <= 0 ) 
+        break ;
+
+    /* Provide the message to be encrypted, and obtain the encrypted output.*/
+    if( 1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, nbytes ) ) 
+        handleErrors("Error");
+    ciphertext_len += len;
+    write( fd_out, (const char *) ciphertext, len );
+    memset( ciphertext, 0, sizeof(ciphertext) );
+    memset( plaintext, 0, sizeof(plaintext) );
+  }
+
+  /* Finalise the encryption. Further ciphertext bytes may be written at
+  * this stage.
+  */
+  if( 1 != EVP_EncryptFinal_ex(ctx, ciphertext, &len) )
+      handleErrors("Error");
+
+  write( fd_out, (const char*) ciphertext, len );
+  ciphertext_len += len;
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+  return ciphertext_len;
+}
+
+//-----------------------------------------------------------------------------
+int decryptFile( int fd_in, int fd_out, unsigned char *key, unsigned char *iv )
+{
+  EVP_CIPHER_CTX *ctx;
+  int len, plaintext_len;
+  char plaintext[PLAINTEXT_LEN_MAX];
+  char ciphertext[CIPHER_LEN_MAX];
+
+  /* Create and initialise the context */
+  if( !(ctx = EVP_CIPHER_CTX_new()) )
+      handleErrors("Error");
+
+  /* Initialise the decryption operation. IMPORTANT - ensure you use a key
+  * and IV size appropriate for your cipher
+  * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+  * IV size for *most* modes is the same as the block size. For AES this
+  * is 128 bits */
+  if( 1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv) )
+      handleErrors("Error");
+
+  /* Provide the message to be decrypted, and obtain the plaintext output.
+  * EVP_DecryptUpdate can be called multiple times if necessary
+  */
+  while ( 1 ) 
+  {
+    int nbytes = read( fd_in, ciphertext, CIPHER_LEN_MAX) ;
+    if ( nbytes <= 0 ) 
+        break ;
+
+    if ( 1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, nbytes ) ) 
+        handleErrors("Error");
+    plaintext_len += len;
+    write( fd_out, plaintext, len ) ; 
+    memset( ciphertext, 0, sizeof(ciphertext) ) ; 
+    memset( plaintext, 0, sizeof(plaintext) ) ; 
+  }   
+
+  /* Finalise the decryption. Further plaintext bytes may be written at
+  * this stage.
+  */
+  if( 1 != EVP_DecryptFinal_ex(ctx, plaintext, &len) )
+      handleErrors("Error");
+
+  write( fd_out, plaintext, len ) ; 
+  plaintext_len += len;
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+  return plaintext_len;
 }
 
