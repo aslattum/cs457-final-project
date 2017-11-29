@@ -49,7 +49,7 @@ int main ( int argc , char * argv[] )
 	fprintf( log , "This is Basim. Will read the bunny file from FD %d\n" , AtoB_data);
 
     /* Step 3 of Protocol */
-	fprintf(log, "\n---- Step 3 of Protocol ----\n");
+	fprintf(log, "\n---- Message 3 of Protocol ----\n");
 
 	unsigned key_len = 32; // i.e. 256 bits
     unsigned iv_len = 16; // i.e. 128 bits
@@ -155,7 +155,7 @@ int main ( int argc , char * argv[] )
 
 	fprintf(log, "Read from Amal the Ks key, Ks iv, IDa, and Na2\n");
 	fprintf(log, "Hexdump of Ks Key:\n");
-	BIO_dump_fp (log, (const char *) sessionKey, step3_KsKey_Length);
+	BIO_dump_fp (log, (const char *) sessionKey, key_len);
 	fprintf(log, "Hexdump of Ks IV:\n");
     BIO_dump_fp (log, (const char *) sessionIV, step3_KsIV_Length);	
 	fprintf(log, "IDa: %s\n", step3_IDa);
@@ -163,7 +163,7 @@ int main ( int argc , char * argv[] )
 
 
 	/* Step 4 of Protocol */
-    fprintf(log, "\n---- Step 4 of Protocol ----\n");
+    fprintf(log, "\n---- Message 4 of Protocol ----\n");
 	BN_CTX *ctx = BN_CTX_new();
     BIGNUM *Nb = BN_new();
     BIGNUM *range = BN_new();
@@ -259,7 +259,7 @@ int main ( int argc , char * argv[] )
 	write(BtoA_ctrl, step4_message, step4_message_Length);
 
 	/* Step 5 of Protocol */
-	fprintf(log, "\n---- Step 5 of Protocol ----\n");	
+	fprintf(log, "\n---- Message 5 of Protocol ----\n");	
 
 	uint8_t step5_encrSize[sizeof(int)];
 	uint8_t step5_plaintextSize[sizeof(int)];

@@ -90,14 +90,14 @@ int main ( int argc , char * argv[] )
 	}
 
 	// log out the results in the KDC log
-	fprintf(log, "---- Step 1 of Protocol ----\n");
+	fprintf(log, "---- Message 1 of Protocol ----\n");
 	fprintf(log, "Read IDa, IDb, and Na from Amal\n");
 	fprintf(log , "IDa: %s\n", amalArray);
 	fprintf(log, "IDb: %s\n", basimArray);
 	fprintf(log, "Na: %s\n", BN_bn2hex(Na));
 
 	/* Step 2 of Protocol */
-	fprintf(log, "\n---- Step 2 of Protocol ----\n");
+	fprintf(log, "\n---- Message 2 of Protocol ----\n");
 	unsigned key_len = 32; // i.e. 256 bits
 	unsigned iv_len = 16; // i.e. 128 bits
 

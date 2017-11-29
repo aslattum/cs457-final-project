@@ -121,7 +121,7 @@ int main ( int argc , char * argv[] )
     if (KDC_write < writeSize) {
         fprintf( log , "Write to the KDC failed" );
     } else {
-		fprintf( log , "---- Step 1 of Protocol ----\n");
+		fprintf( log , "---- Message  1 of Protocol ----\n");
         fprintf( log , "Wrote the IDa, IDb, and Na to the KDC\n");
         fprintf( log , "IDa: %s\n", IDa);
         fprintf( log , "IDb: %s\n", IDb);
@@ -129,7 +129,7 @@ int main ( int argc , char * argv[] )
 	}
 
 	/* Step 2 of Protocol */
-	fprintf(log, "\n---- Step 2 of Protocol ----\n");
+	fprintf(log, "\n---- Message 2 of Protocol ----\n");
 	
 	unsigned key_len = 32; // i.e. 256 bits
     unsigned iv_len = 16; // i.e. 128 bits
@@ -247,7 +247,7 @@ int main ( int argc , char * argv[] )
     BIO_dump_fp (log, (const char *) step2_innerEncr, step2_innerEncr_Length);
 
 	/* Step 3 of Protocol */
-	fprintf(log, "\n---- Step 3 of Protocol ----\n");
+	fprintf(log, "\n---- Message 3 of Protocol ----\n");
 
 	// create a new nonce for transmission to basim from amal
 	BIGNUM* Na2 = BN_new();
@@ -305,7 +305,7 @@ int main ( int argc , char * argv[] )
 	write(AtoB_ctrl, step3_message, step3_totalLength);	
 
 	/* Step 4 of Protocol */
-	fprintf(log, "\n---- Step 4 of Protocol ----\n");
+	fprintf(log, "\n---- Message 4 of Protocol ----\n");
 	
 	uint8_t step4_encrSize[sizeof(int)];
 	uint8_t step4_plaintextSize[sizeof(int)];
@@ -375,7 +375,7 @@ int main ( int argc , char * argv[] )
 
 
 	/* Step 5 of Protocol */
-	fprintf(log, "\n---- Step 5 of Protocol ----\n");
+	fprintf(log, "\n---- Message 5 of Protocol ----\n");
 
 	// function of Nb to send back to basim
 	BIGNUM* functionNb_BN = BN_new();
