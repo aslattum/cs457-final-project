@@ -125,14 +125,14 @@ int main( int argc , char *argv[] )
 				close( BtoA_ctrl[WRITE_END]);
 				close( BtoA_ctrl[READ_END]);   
 
-            	printf("\nDispatcher is now waiting for Amal to terminate\n") ;
+            	printf("\nDispatcher is now waiting for KDC to terminate\n") ;
+                waitpid( kdcPID , NULL , 0 ) ;
+
+				printf("\nDispatcher is now waiting for Amal to terminate\n") ;
             	waitpid( amalPID , NULL , 0 ) ;
 
             	printf("\nDispatcher is now waiting for Basim to terminate\n") ;
             	waitpid( basimPID , NULL , 0 ) ;
-
-				printf("\nDispatcher is now waiting for KDC to terminate\n") ;
-                waitpid( kdcPID , NULL , 0 ) ; 	
 
             	printf("\nThe Dispatcher process has terminated\n") ;     
         	}
