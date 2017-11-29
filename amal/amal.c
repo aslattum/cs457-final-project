@@ -439,6 +439,18 @@ int main ( int argc , char * argv[] )
 
 	/* Transmit bunny.mp4 file to basim using session key for encryption */
 	encryptFile(fd_bunny, AtoB_data, step2_KsKey, step2_KsIV);
+
+	BN_clear_free(Na);
+	BN_clear_free(range);
+	BN_clear_free(two);
+	BN_clear_free(sixty_four);
+	BN_clear_free(step2_Na_BN);
+	BN_clear_free(Na2);
+	BN_clear_free(step4_functionNa2_BN);
+	BN_clear_free(one);
+	BN_clear_free(checkFunctionNa2);
+	BN_clear_free(Nb);
+	BN_clear_free(functionNb_BN);
 	
     EVP_cleanup();
     ERR_free_strings();

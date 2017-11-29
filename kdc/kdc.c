@@ -247,6 +247,8 @@ int main ( int argc , char * argv[] )
 
 	write(KDCtoA_ctrl, step2_message, totalMsgSize);
 
+	BN_clear_free(Na);
+
 	EVP_cleanup();
     ERR_free_strings();
 

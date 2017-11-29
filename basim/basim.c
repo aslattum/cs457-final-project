@@ -315,6 +315,16 @@ int main ( int argc , char * argv[] )
 	/* Read bunny.mp4 file from Amal using session key for decryption */
     decryptFile(AtoB_data, fd_bunny, sessionKey, sessionIV);
 
+	BN_clear_free(step3_Na2);
+    BN_clear_free(Nb);
+    BN_clear_free(range);
+    BN_clear_free(two);
+    BN_clear_free(sixty_four);
+    BN_clear_free(function_Na2);
+    BN_clear_free(one);
+    BN_clear_free(step5_fNb);
+    BN_clear_free(checkFunctionNb);
+
 	EVP_cleanup();
     ERR_free_strings();
 
