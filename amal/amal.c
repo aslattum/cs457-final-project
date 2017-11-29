@@ -303,6 +303,137 @@ int main ( int argc , char * argv[] )
 
 	// write step3 message to basim
 	write(AtoB_ctrl, step3_message, step3_totalLength);	
+
+	/* Step 4 of Protocol */
+	fprintf(log, "\n---- Step 4 of Protocol ----\n");
+	
+	uint8_t step4_encrSize[sizeof(int)];
+	uint8_t step4_plaintextSize[sizeof(int)];
+	uint8_t step4_functionNa2Size[sizeof(int)];
+	uint8_t step4_NbSize[sizeof(int)];
+
+	// read the size of the encryption in step 4
+	read(BtoA_ctrl, step4_encrSize, sizeof(int));
+	int step4_ciphertextLength = atoi(step4_encrSize);
+
+	// read the ciphertext in sent from basim
+	uint8_t step4_ciphertext[step4_ciphertextLength];
+	read(BtoA_ctrl, step4_ciphertext, step4_ciphertextLength);
+
+	uint8_t step4_plaintext[CIPHER_LEN_MAX];
+	int step4_plaintextLength = decrypt(step4_ciphertext, step4_ciphertextLength, step2_KsKey, step2_KsIV, step4_plaintext);
+
+	int step4_read_index = 0;
+
+	// read in the size of the plaintext
+	memcpy(step4_plaintextSize, step4_plaintext + step4_read_index, sizeof(int));
+	step4_read_index += sizeof(int);	 
+
+	// read in the size of the function of Na2 sent to basim in step 3
+	memcpy(step4_functionNa2Size, step4_plaintext + step4_read_index, sizeof(int));
+	step4_read_index += sizeof(int);
+
+	// read in the function of Na2
+	int functionNa2Length = atoi(step4_functionNa2Size);
+	uint8_t functionNa2[functionNa2Length];
+	memcpy(functionNa2, step4_plaintext + step4_read_index, functionNa2Length);
+	step4_read_index += functionNa2Length;
+
+	// check that the function of the nonce checks out to validate basim
+	BIGNUM* step4_functionNa2_BN = BN_new();
+    BN_bin2bn(functionNa2, functionNa2Length, step4_functionNa2_BN);
+	BIGNUM *one = BN_new();
+	BN_dec2bn(&one, "1");
+	BIGNUM *checkFunctionNa2 = BN_new();
+	BN_sub(checkFunctionNa2, step4_functionNa2_BN, one);	
+
+	// check to make sure nonces match after function is applied in reverse
+	if (BN_cmp(Na2, checkFunctionNa2) != 0)
+	{
+		fprintf(log, "Nonce received from the Basim does not match Na2, exiting\n");
+		exit(-1);
+	}
+
+	// read in the size of Nb
+	memcpy(step4_NbSize, step4_plaintext + step4_read_index, sizeof(int));
+	step4_read_index += sizeof(int);
+
+	// read in Nb
+	int step4_NbLength = atoi(step4_NbSize);
+	uint8_t step4_Nb[step4_NbLength];
+	memcpy(step4_Nb, step4_plaintext + step4_read_index, step4_NbLength); 
+
+	BIGNUM* Nb = BN_new();
+	BN_bin2bn(step4_Nb, step4_NbLength, Nb);
+
+	//log out important information
+	fprintf(log, "Read function of Na2 and Nb from Basim\n");	
+	fprintf(log, "f(Na2): %s\n", BN_bn2hex(step4_functionNa2_BN));
+	fprintf(log, "Na2 after function applied in opposite way: %s\n", BN_bn2hex(checkFunctionNa2));
+	fprintf(log, "Nb: %s\n", BN_bn2hex(Nb)); 
+	fprintf(log, "\nBASIM HAS BEEN VALIDATED\n");
+
+
+	/* Step 5 of Protocol */
+	fprintf(log, "\n---- Step 5 of Protocol ----\n");
+
+	// function of Nb to send back to basim
+	BIGNUM* functionNb_BN = BN_new();
+	BN_add(functionNb_BN, Nb, one);
+
+	// store function Nb in uint8_t array	
+	int functionNbLength = BN_num_bytes(functionNb_BN);
+	uint8_t functionNbArray[functionNbLength];
+	BN_bn2bin(functionNb_BN, functionNbArray);
+
+	// store size of function Nb in array
+	uint8_t functionNbSize[sizeof(int)];
+	snprintf(functionNbSize, sizeof(int), "%d", functionNbLength);
+
+	// total size to be encrypted
+	int step5_plaintextLength = functionNbLength + sizeof(int);
+    uint8_t step5_plaintextTempSize[sizeof(int)];
+	snprintf(step5_plaintextTempSize, sizeof(int), "%d", step5_plaintextLength);
+    int step5_totalPlaintextLength = step5_plaintextLength + sizeof(int);
+	uint8_t step5_plaintext[step5_totalPlaintextLength];
+
+	int step5_inner_index = 0;
+
+	// put total size into array
+	memcpy(step5_plaintext + step5_inner_index, step5_plaintextTempSize, sizeof(int));
+	step5_inner_index += sizeof(int);	
+
+	// put Nb size in plaintext array
+	memcpy(step5_plaintext + step5_inner_index, functionNbSize, sizeof(int));
+	step5_inner_index += sizeof(int);
+
+	// put Nb in plaintext array
+	memcpy(step5_plaintext + step5_inner_index, functionNbArray, functionNbLength);
+
+	// encrypt the function of the Nb
+	uint8_t step5_ciphertext[CIPHER_LEN_MAX];
+	int step5_ciphertextLength = encrypt(step5_plaintext, step5_totalPlaintextLength, step2_KsKey, step2_KsIV, step5_ciphertext);
+
+	// store size of cipher text as an array
+	uint8_t step5_ciphertextSize[sizeof(int)];
+	snprintf(step5_ciphertextSize, sizeof(int), "%d", step5_ciphertextLength);
+
+	int step5_messageLength = step5_ciphertextLength + sizeof(int);
+	uint8_t step5_message[step5_messageLength];
+
+	int step5_finalIndex = 0;
+
+	// store size of the ciphertext in final step 5 message array
+	memcpy(step5_message + step5_finalIndex, step5_ciphertextSize, sizeof(int));
+	step5_finalIndex += sizeof(int);
+
+	// store ciphertext in final step 5 message array
+	memcpy(step5_message + step5_finalIndex, step5_ciphertext, step5_ciphertextLength); 
+
+	fprintf(log, "Wrote the function of Nb back to Basim encrypted with the session key\n");
+	fprintf(log, "f(Nb): %s\n", BN_bn2hex(functionNb_BN));
+
+	write(AtoB_ctrl, step5_message, step5_messageLength);
 	
     EVP_cleanup();
     ERR_free_strings();

@@ -152,6 +152,157 @@ int main ( int argc , char * argv[] )
 	fprintf(log, "IDa: %s\n", step3_IDa);
 	fprintf(log, "Na2: %s\n", BN_bn2hex(step3_Na2)); 	
 
+
+	/* Step 4 of Protocol */
+    fprintf(log, "\n---- Step 4 of Protocol ----\n");
+	BN_CTX *ctx = BN_CTX_new();
+    BIGNUM *Nb = BN_new();
+    BIGNUM *range = BN_new();
+
+    // craete two and 64 random nums to do 2^64 range for random num
+    BIGNUM *two = BN_new();
+    BIGNUM *sixty_four = BN_new();
+    BN_dec2bn(&two, "2");
+    BN_dec2bn(&sixty_four, "64");
+
+    // create the range for the random num
+    BN_exp(range, two, sixty_four, ctx);
+
+    // create the random nonce Na
+    BN_rand_range(Nb, range);		
+
+	// create array to hold the BIGNUM
+	int nonceBLength = BN_num_bytes(Nb);
+    uint8_t nonceB[nonceBLength];
+	
+	// transform big num into binary
+	BN_bn2bin(Nb, nonceB);	
+
+	// compute the function of Na2
+	BIGNUM* function_Na2 = BN_new();
+	BIGNUM *one = BN_new();
+	BN_dec2bn(&one, "1");
+	BN_add(function_Na2, step3_Na2, one);
+
+	// turn function of Na2 into array
+	int functionNa2_Length = BN_num_bytes(function_Na2);
+	uint8_t function_Na2_Array[functionNa2_Length];
+	BN_bn2bin(function_Na2, function_Na2_Array);
+
+	// sizes to go into message
+	uint8_t functionNa2_Size[sizeof(int)];
+	snprintf(functionNa2_Size, sizeof(int), "%d", functionNa2_Length);
+	uint8_t nonceB_Size[sizeof(int)];
+	snprintf(nonceB_Size, sizeof(int), "%d", nonceBLength);
+
+	// combine function of Na2 and Nb for encryption
+	int step4_tempLength = functionNa2_Length + nonceBLength + (sizeof(int)*2);
+	uint8_t step4_tempSize[sizeof(int)];
+	snprintf(step4_tempSize, sizeof(int), "%d", step4_tempLength);	
+
+	int step4_plaintextLength = step4_tempLength + sizeof(int);
+	uint8_t step4_plaintext[step4_plaintextLength];
+
+	int step4_tempIndex = 0;
+	
+	// put the size of the combined plaintext in the message
+	memcpy(step4_plaintext + step4_tempIndex, step4_tempSize, sizeof(int));
+	step4_tempIndex += sizeof(int);
+
+	// put the size of function of Na2 in array	
+	memcpy(step4_plaintext + step4_tempIndex, functionNa2_Size, sizeof(int));
+	step4_tempIndex += sizeof(int);
+
+	// put the function of Na2 in array
+	memcpy(step4_plaintext + step4_tempIndex, function_Na2_Array, functionNa2_Length);
+	step4_tempIndex += functionNa2_Length;
+
+	// put the size of Nb in array
+	memcpy(step4_plaintext + step4_tempIndex, nonceB_Size, sizeof(int));
+	step4_tempIndex += sizeof(int);
+
+	// put Nb into an array
+	memcpy(step4_plaintext + step4_tempIndex, nonceB, nonceBLength);
+
+	uint8_t step4_ciphertext[CIPHER_LEN_MAX];
+	int step4_ciphertext_Length = encrypt(step4_plaintext, step4_plaintextLength, sessionKey, sessionIV, step4_ciphertext);	
+
+	uint8_t step4_ciphertextSize[sizeof(int)];
+	snprintf(step4_ciphertextSize, sizeof(int), "%d", step4_ciphertext_Length);
+
+	int step4_message_Length = step4_ciphertext_Length + sizeof(int); 
+	uint8_t step4_message[step4_message_Length];
+
+	int step4_index = 0;
+
+	// put the size of the encryption on the front
+	memcpy(step4_message + step4_index, step4_ciphertextSize, sizeof(int));
+	step4_index += sizeof(int);
+
+	// put the ciphertext into final message for step 4
+	memcpy(step4_message + step4_index, step4_ciphertext, step4_ciphertext_Length);
+
+	fprintf(log, "Wrote to Amal the function of Na2 and Nb encrypted with the session key\n");
+    fprintf(log, "Function of Na2: %s\n", BN_bn2hex(function_Na2));
+    fprintf(log, "Nb: %s\n", BN_bn2hex(Nb));
+
+	// write the step4 message to the pipe
+	write(BtoA_ctrl, step4_message, step4_message_Length);
+
+	/* Step 5 of Protocol */
+	fprintf(log, "\n---- Step 5 of Protocol ----\n");	
+
+	uint8_t step5_encrSize[sizeof(int)];
+	uint8_t step5_plaintextSize[sizeof(int)];
+	uint8_t step5_functionNbSize[sizeof(int)];
+
+	// read the size of the encryption from step 5
+	read(AtoB_ctrl, step5_encrSize, sizeof(int));
+	int step5_encrLength = atoi(step5_encrSize);
+
+	// read the ciphertext from Amal in step 5
+	uint8_t step5_ciphertext[step5_encrLength];
+	read(AtoB_ctrl, step5_ciphertext, step5_encrLength);
+
+	// decrypt the message in step 5
+	uint8_t step5_plaintext[CIPHER_LEN_MAX];
+	int step5_plaintextLength = decrypt(step5_ciphertext, step5_encrLength, sessionKey, sessionIV, step5_plaintext);
+
+	int step5_curIndex = 0;	
+
+	// memcpy the entire length of plaintext
+	memcpy(step5_plaintextSize, step5_plaintext + step5_curIndex, sizeof(int));
+	step5_curIndex += sizeof(int);
+
+	// memcpy the size of f(Nb)
+	memcpy(step5_functionNbSize, step5_plaintext + step5_curIndex, sizeof(int));
+	step5_curIndex += sizeof(int);
+
+	// memcpy the f(Nb)
+	int step5_functionNbLength = atoi(step5_functionNbSize);
+	uint8_t step5_fNbArray[step5_functionNbLength];
+	memcpy(step5_fNbArray, step5_plaintext + step5_curIndex, step5_functionNbLength);
+
+	// turn array into BIGNUM
+	BIGNUM* step5_fNb = BN_new();
+	BN_bin2bn(step5_fNbArray, step5_functionNbLength, step5_fNb);
+		 
+	BIGNUM *checkFunctionNb = BN_new();
+	BN_sub(checkFunctionNb, step5_fNb, one);	
+
+	// check to make sure nonces match after function is applied in reverse
+	if (BN_cmp(Nb, checkFunctionNb) != 0)
+	{
+		fprintf(log, "Nonce received from the Basim does not match Na2, exiting\n");
+		exit(-1);
+	}
+
+	fprintf(log, "Read the function of Nb from Amal\n");
+	fprintf(log, "f(Nb): %s\n", BN_bn2hex(step5_fNb));
+	fprintf(log, "Na2 after function applied in opposite way: %s\n" , BN_bn2hex(checkFunctionNb));
+	fprintf(log, "\nAMAL HAS BEEN VALIDATED\n");	
+
+
 	EVP_cleanup();
     ERR_free_strings();
 
