@@ -242,8 +242,9 @@ int main ( int argc , char * argv[] )
     fprintf(log, "Hexdump of Ks IV:\n");
     BIO_dump_fp (log, (const char *) step2_KsIV, step2_KsIV_Length);
     fprintf(log, "IDb: %s\n", step2_IDb);
-    fprintf(log, "Nonce's match, Na: %s\n", BN_bn2hex(step2_Na_BN));
-    fprintf(log, "Ciphertext intended for basim:\n");
+    fprintf(log, "Na: %s\n", BN_bn2hex(step2_Na_BN));
+    fprintf(log, "Na matches: KDC HAS BEEN VALIDATED\n");
+	fprintf(log, "Ciphertext intended for basim:\n");
     BIO_dump_fp (log, (const char *) step2_innerEncr, step2_innerEncr_Length);
 
 	/* Step 3 of Protocol */
@@ -370,8 +371,8 @@ int main ( int argc , char * argv[] )
 	fprintf(log, "Read function of Na2 and Nb from Basim\n");	
 	fprintf(log, "f(Na2): %s\n", BN_bn2hex(step4_functionNa2_BN));
 	fprintf(log, "Na2 after function applied in opposite way: %s\n", BN_bn2hex(checkFunctionNa2));
+	fprintf(log, "Na2 matches: BASIM HAS BEEN VALIDATED\n");
 	fprintf(log, "Nb: %s\n", BN_bn2hex(Nb)); 
-	fprintf(log, "\nBASIM HAS BEEN VALIDATED\n");
 
 
 	/* Step 5 of Protocol */

@@ -308,8 +308,8 @@ int main ( int argc , char * argv[] )
 
 	fprintf(log, "Read the function of Nb from Amal\n");
 	fprintf(log, "f(Nb): %s\n", BN_bn2hex(step5_fNb));
-	fprintf(log, "Na2 after function applied in opposite way: %s\n" , BN_bn2hex(checkFunctionNb));
-	fprintf(log, "\nAMAL HAS BEEN VALIDATED\n");	
+	fprintf(log, "Nb after function applied in opposite way: %s\n" , BN_bn2hex(checkFunctionNb));
+	fprintf(log, "Nb matches: AMAL HAS BEEN VALIDATED\n");	
 
 	
 	/* Read bunny.mp4 file from Amal using session key for decryption */
