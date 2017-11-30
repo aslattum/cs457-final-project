@@ -252,7 +252,7 @@ int main ( int argc , char * argv[] )
 	memcpy(step4_message + step4_index, step4_ciphertext, step4_ciphertext_Length);
 
 	fprintf(log, "Wrote to Amal the function of Na2 and Nb encrypted with the session key\n");
-    fprintf(log, "Function of Na2: %s\n", BN_bn2hex(function_Na2));
+    fprintf(log, "f(Na2): %s\n", BN_bn2hex(function_Na2));
     fprintf(log, "Nb: %s\n", BN_bn2hex(Nb));
 
 	// write the step4 message to the pipe

@@ -30,6 +30,7 @@ echo "Basim's Key Material:"
 hexdump -C kdc/basim_key.bin
 echo "Basim's IV Material:"
 hexdump -C kdc/basim_iv.bin
+echo
 
 echo "=============================="
 echo "Sharing keys from KDC to Amal"
@@ -52,13 +53,16 @@ echo "Starting the dispatcher"
 ./dispatcher
 
 echo
+echo
 echo "======  KDC's LOG ========="
 cat kdc/logKDC.txt
 
 echo
+echo
 echo "======  Amal's  LOG  ========="
 cat amal/logAmal.txt
 
+echo
 echo
 echo "======  Basim's  LOG  ========="
 cat basim/logBasim.txt
